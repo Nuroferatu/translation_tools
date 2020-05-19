@@ -58,6 +58,39 @@ class TranslationFile {
         return true;
     }
 
+    // Returns Key=>Val array where key is source lang word, val is array of destination translations.
+    // On error returns null.
+    // Sample line from translation file:
+    // able;zdolny,utalentowany    ,zdatny
+    function get( $line ) {
+        // $line = fgets( $this->handle );
+        $line = str_replace( array("\n", "\r", "\t", " "), '', $line );
+
+        if( empty( $line ) )
+            return null;
+
+        $keyValArray = explode(";", $line );
+        if( count($keyValArray) < 2 ) {
+            echo "* Error in translation file. Invalid format" . PHP_EOL;
+            return null;
+        }
+
+        if( empty( $keyValArray[0] ) ) {
+            echo "* Error in translation file. Missing source lang word" . PHP_EOL;
+            return null;
+        }
+
+        if( empty( $keyValArray[1] ) ) {
+            echo "* Error in translation file. Missing destination translation words" . PHP_EOL;
+            return null;
+        }
+
+        $result = array( $keyValArray[0] => $keyValArray[1] );
+        print_r( $result );
+        echo PHP_EOL;
+        return $result;
+    }
+
     function getSrcLang()  {
         return $this->srcLang;
     }
