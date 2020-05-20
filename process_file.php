@@ -10,13 +10,11 @@ initErrorHandler();
 $tfile = new TranslationFile( "translation_enpl.csv" );
 echo "Translate " . $tfile->getSrcLang() . " => " . $tfile->getDestLang() . PHP_EOL;
 
-// Database fun... first time with PDO
-// Create SQlite database called translate_[srclangdestlang].sq3
+// hmmm why not use Sqlite3 class?
 $dbName = "translate_" . $tfile->getSrcLang() . $tfile->getDestLang() . ".sq3";
 
-$db = new SQLiteDB();
-$db->open( $dbName );
-
+$db = new Sqlite3( $dbName );
+var_dump( $db );
 $db = null;
 
 ?>
