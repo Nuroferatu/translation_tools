@@ -87,6 +87,9 @@ class TranslationFile {
             return null;
         }
 
+        $tmp = explode( ",", $keyValArray[1] );
+        $keyValArray[1] = $tmp;
+
         return $keyValArray;
     }
 

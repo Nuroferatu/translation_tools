@@ -63,13 +63,13 @@ while( !$tfile->isEOF() ) {
     $dataLine = $tfile->get();
     if( !is_null($dataLine) ) {
         $srcId = $srcLangTable->insert( $dataLine[0] );
-        // $dstIdArray = array();
-        // var_dump( $dataLine[1] );
+        $dstIdArray = array();
         // Place all translations into dstLangTable
-        // forrach( $dataLine[1] as $val ) {
-        //     // We should find translated word first
-        //     $destId = $dstLangTable->insert( $val );
-        // }
+        foreach( $dataLine[1] as $val ) {
+            // We should find translated word first
+            $destId = $dstLangTable->insert( $val );
+            echo "[${val}][${destId}]" . PHP_EOL;
+        }
 
         // With this information we can fill translation table
     }
