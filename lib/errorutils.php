@@ -32,4 +32,23 @@ function initErrorHandler() {
     set_exception_handler('exceptionHandler');
 }
 
+class Validate {
+    static function fatalOnNull( $var, string $paramName, string $where ) {
+        if( !is_null( $var ) )
+            return false;
+        fatalError( "${paramName} is null. Passed to '${where}'" ); 
+    }
+
+    static function fatalOnEmpty( $var, string $paramName, string $where ) {
+        if( !empty( $var ) )
+            return false;
+        fatalError( "${paramName} is empty. Passed to '${where}'" ); 
+    }
+
+    static function fatalOnNullOrEmpty( $var, string $paramName, string $where ) {
+        fatalOnNull( $var, $paramName, $where );
+        fatalOnEmpty( $var, $paramName, $where );
+    }
+}
+
 ?>

@@ -1,29 +1,22 @@
 #!/usr/bin/php
 <?php
 
+require_once "lib/errorutils.php";
 require_once "lib/translationfile.php";
+require_once "lib/db/sqlitedb.php";
 
-try {
-    $tfile = new TranslationFile( "translation_enpl.csv" );
-    echo "Translate " . $tfile->getSrcLang() . " => " . $tfile->getDestLang() . PHP_EOL;
+initErrorHandler();
 
-    // while( !$tfile->isEOF() ) {
-    //     print_r( $tfile->get() );
-    // }
+$tfile = new TranslationFile( "translation_enpl.csv" );
+echo "Translate " . $tfile->getSrcLang() . " => " . $tfile->getDestLang() . PHP_EOL;
 
-    // Test line processing
-    // Correct line
-    $tfile->get( "able;zdolny,utalentowany    ,zdatny" );
+// Database fun... first time with PDO
+// Create SQlite database called translate_[srclangdestlang].sq3
+$dbName = "translate_" . $tfile->getSrcLang() . $tfile->getDestLang() . ".sq3";
 
-    // invalid input
-    $tfile->get( "" );
-    $tfile->get( ";zdolny,utalentowany    ,zdatny" );
-    $tfile->get( "zdolny,utalentowany    ,zdatny" );
-    $tfile->get( "able;" );
-    $tfile->get( "able" );
+$db = new SQLiteDB();
+$db->open( $dbName );
 
-}
-catch( RuntimeException $e ) {
-    echo "\n\nException : " . $e;
-}
+$db = null;
+
 ?>

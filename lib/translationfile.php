@@ -62,8 +62,10 @@ class TranslationFile {
     // On error returns null.
     // Sample line from translation file:
     // able;zdolny,utalentowany    ,zdatny
-    function get( $line ) {
-        // $line = fgets( $this->handle );
+    // -----------------------------------------------------------------------
+    // TODO: Better error handling - errorLog array with line numbers as final report would be osom
+    function get() {
+        $line = fgets( $this->handle );
         $line = str_replace( array("\n", "\r", "\t", " "), '', $line );
 
         if( empty( $line ) )
@@ -84,11 +86,7 @@ class TranslationFile {
             echo "* Error in translation file. Missing destination translation words" . PHP_EOL;
             return null;
         }
-
-        $result = array( $keyValArray[0] => $keyValArray[1] );
-        print_r( $result );
-        echo PHP_EOL;
-        return $result;
+        return array( $keyValArray[0] => $keyValArray[1] );
     }
 
     function getSrcLang()  {
