@@ -86,7 +86,8 @@ class TranslationFile {
             echo "* Error in translation file. Missing destination translation words" . PHP_EOL;
             return null;
         }
-        return array( $keyValArray[0] => $keyValArray[1] );
+
+        return $keyValArray;
     }
 
     function getSrcLang()  {
