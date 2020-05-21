@@ -3,52 +3,37 @@
 
 require_once "lib/errorutils.php";
 require_once "lib/translationfile.php";
-
 require_once "lib/debugutils.php";
+require_once "lib/langtable.php";
 
-class LangTable {
+class Dictionary {
     private     $db;
-    private     $langCode;
     private     $tableName;
     private     $insertStm;
-    private     $findStm;
 
-    function __construct( Sqlite3 $dbHandle, string $langCode ) {
+    function __construct( Sqlite3 $dbHandle, string $srcLang, string $dstLang ) {
         Validate::fatalOnNull( $dbHandle, "dbHandle", __CLASS__."::".__FUNCTION__ );
-        Validate::fatalOnEmpty( $langCode, "langCode", __CLASS__."::".__FUNCTION__ );
+        Validate::fatalOnEmpty( $srcLang, "srcLang", __CLASS__."::".__FUNCTION__ );
+        Validate::fatalOnEmpty( $dstLang, "dstLang", __CLASS__."::".__FUNCTION__ );
+
         $this->db = $dbHandle;
-        $this->langCode = $langCode;
-        $this->tableName = "lang_" . $this->langCode;
-        $this->insertStm = $this->db->prepare( "INSERT INTO " . $this->tableName . " (word) VALUES (?);" );
-        $this->findIDStm = $this->db->prepare( "SELECT id FROM " . $this->tableName . " where word = ?;" );
+        $this->tableName = "dictionary_" . $srcLang . $dstLang;
+        // TODO: Error handling - we must thro here if any of this exec fails
+        $this->db->exec( "DROP TABLE IF EXISTS " . $this->tableName . ";" );
+        $this->db->exec( "CREATE TABLE  " . $this->tableName . " ( src_id integer, dst_id integer );" );
+
+        $this->insertStm = $this->db->prepare( "INSERT INTO " . $this->tableName . " (src_id,dst_id) VALUES (?,?);" );
     }
 
-    function __destruct() {
-    }
-
-    function create() {
-        // We need to drop table first then create it again, subiect to change in future
-        $sql = "DROP TABLE IF EXISTS " . $this->tableName . ";";
-        $this->db->exec($sql);
-
-        $sql = "CREATE TABLE IF NOT EXISTS " . $this->tableName . " ( id integer PRIMARY KEY, word text NOT NULL );";
-        $this->db->exec($sql);
-    }
-
-    function find( string $word ) {
-        $this->findIDStm->bindValue(1, $word, SQLITE3_TEXT);
-        $res = $this->findIDStm->execute();
-        $row = $res->fetchArray( SQLITE3_NUM );
-        if( $row === false )
-            return null;
-        return $row[0];
-    }
-
-    function insert( string $word ) {
-        $this->insertStm->bindValue(1, $word, SQLITE3_TEXT);
-        $res = $this->insertStm->execute();
+    function insert(int $srcId, array $dstIdArray) {
+        $this->insertStm->bindValue( 1, $srcId, SQLITE3_INTEGER );
+        foreach( $dstIdArray as $destId ) {
+            $this->insertStm->bindValue( 2, $destId, SQLITE3_INTEGER );
+            $res = $this->insertStm->execute();
+            if( $res === false )
+                fatalError( "Failed to insert ${srcId} => ${destId} to dictionary table" );
+        }
         $res->finalize();
-        return $this->db->lastInsertRowid();
     }
 }
 
@@ -65,14 +50,16 @@ $dbName = "translate_" . $tfile->getSrcLang() . $tfile->getDestLang() . ".sq3";
 $db = new Sqlite3( $dbName );
 
 // Create source table... if table exist it will be destroyed and recreated
+// TODO: move create to ctor
 $srcLangTable = new LangTable( $db, $tfile->getSrcLang() );
 $srcLangTable->create();
 
 $dstLangTable = new LangTable( $db, $tfile->getDestLang() );
 $dstLangTable->create();
 
+$dictionary = new Dictionary( $db, $tfile->getSrcLang(), $tfile->getDestLang() );
+
 // Lets process what we get from our translation file...
-$transArray = array();
 while( !$tfile->isEOF() ) {
     $dataLine = $tfile->get();
     if( !is_null($dataLine) ) {
@@ -95,9 +82,8 @@ while( !$tfile->isEOF() ) {
             array_push($dstIdArray, $destId);
         }
         // Later we use this to create translation table
-        echo " Trans Array: ${srcId} => [" . implode(",", $dstIdArray ) . "]";
-        $transArray[$srcId] = $dstIdArray;
-        echo PHP_EOL;
+        echo " Trans Array: ${srcId} => [" . implode(",", $dstIdArray ) . "]" . PHP_EOL;
+        $dictionary->insert( $srcId, $dstIdArray );
     }
 }
 
