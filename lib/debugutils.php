@@ -1,6 +1,6 @@
 <?php
 
-function printVar( $var, $varName ) {
+function printVar( $var, string $varName ) {
     echo "DBG: '" . TColor::cyan($varName) . "' ";
     echo "null[" . ( is_null($var) ? "T" : "F" ) . "] ";
     echo "set[" . ( isset($var) ? "T" : "F" ) . "] ";
