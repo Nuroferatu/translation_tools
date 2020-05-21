@@ -5,6 +5,7 @@
 class TColor {
     private const ESCCMD = "\e[";
     private const RED = TColor::ESCCMD . "31m";
+    private const GREEN = TColor::ESCCMD . "32m";
     private const CYAN = TColor::ESCCMD . "36m";
     private const RESET = TColor::ESCCMD . "0m";
 
@@ -12,6 +13,7 @@ class TColor {
 
     // Set of decorators...
     static function red( $val )  { return TColor::fmt( Tcolor::RED, $val ); }
+    static function green( $val )  { return TColor::fmt( Tcolor::GREEN, $val ); }
     static function cyan( $val ) { return TColor::fmt( Tcolor::CYAN, $val ); }
 }
 
